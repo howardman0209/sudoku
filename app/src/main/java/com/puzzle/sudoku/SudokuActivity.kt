@@ -1,12 +1,14 @@
 package com.puzzle.sudoku
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.puzzle.sudoku.databinding.ActivitySudokuBinding
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
@@ -19,15 +21,30 @@ class SudokuActivity : AppCompatActivity() {
     private val progressDialog: AlertDialog by lazy {
         ProgressDialog(this).create()
     }
+    private var progressStart = 0L
+
 
     private fun showLoadingIndicator(show: Boolean) {
-        if (show) progressDialog.show() else progressDialog.dismiss()
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (show) {
+                progressStart = System.currentTimeMillis()
+                progressDialog.show()
+            } else {
+                val processTime = System.currentTimeMillis() - progressStart
+                Log.d("progressDialog", "processTime: $processTime")
+                if (processTime < 500) {
+                    delay(500L - processTime)
+                    progressDialog.dismiss()
+                } else {
+                    progressDialog.dismiss()
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
 
         binding.btnNewGame.setOnClickListener {
             showLoadingIndicator(true)
