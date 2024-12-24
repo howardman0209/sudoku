@@ -2,6 +2,7 @@ package com.puzzle.sudoku
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +23,7 @@ class SudokuActivity : AppCompatActivity() {
         ProgressDialog(this).create()
     }
     private var progressStart = 0L
+    private var firstBackPressedTime = 0L
 
 
     private fun showLoadingIndicator(show: Boolean) {
@@ -88,5 +90,16 @@ class SudokuActivity : AppCompatActivity() {
 
     private fun syncPuzzleBoard() {
         binding.sudokuBoard.updatePuzzle(puzzle)
+    }
+
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (System.currentTimeMillis() - firstBackPressedTime < 2000) {
+            super.onBackPressed()
+        } else {
+            firstBackPressedTime = System.currentTimeMillis()
+            Toast.makeText(this, "click exit again", Toast.LENGTH_SHORT).show()
+        }
     }
 }
