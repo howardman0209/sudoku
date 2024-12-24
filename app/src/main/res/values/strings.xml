@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">sudoku</string>
+    <string name="button_new_game">new game</string>
+    <string name="button_close">Close</string>
+    <string name="label_solution">Solution</string>
+    <string name="label_tips">tips</string>
+</resources>
