@@ -24,16 +24,9 @@ class SudokuBoard @JvmOverloads constructor(
     private var pressedCell: Pair<Int, Int>? = null
     private var focusedCell: Pair<Int, Int>? = null
 
-    private val thinBorderPaint = Paint().apply {
-        strokeWidth = 1f
+    private val borderPaint = Paint().apply {
         color = Color.BLACK
     }
-
-    private val thickBorderPaint = Paint().apply {
-        strokeWidth = 5f
-        color = Color.BLACK
-    }
-
 
     private val horizontalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(0f, cellSize * (idx + 1), width.toFloat(), cellSize * (idx + 1)) } }
     private val verticalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(cellSize * (idx + 1), 0f, cellSize * (idx + 1), height.toFloat()) } }
@@ -41,6 +34,7 @@ class SudokuBoard @JvmOverloads constructor(
     private val textPaint by lazy {
         Paint().apply {
             color = Color.BLACK
+            isAntiAlias = true
             textSize = cellSize * 3 / 4
         }
     }
@@ -64,13 +58,13 @@ class SudokuBoard @JvmOverloads constructor(
         canvas.drawColor(Color.WHITE)
 
         horizontalLines.forEachIndexed { idx, line ->
-            val paint = if ((idx + 1) % 3 == 0) thickBorderPaint else thinBorderPaint
-            canvas.drawLines(line, paint)
+            borderPaint.strokeWidth = if ((idx + 1) % 3 == 0) 5f else 1f
+            canvas.drawLines(line, borderPaint)
         }
 
         verticalLines.forEachIndexed { idx, line ->
-            val paint = if ((idx + 1) % 3 == 0) thickBorderPaint else thinBorderPaint
-            canvas.drawLines(line, paint)
+            borderPaint.strokeWidth = if ((idx + 1) % 3 == 0) 5f else 1f
+            canvas.drawLines(line, borderPaint)
         }
 
         puzzle?.let {
