@@ -55,8 +55,10 @@ class SudokuBoard @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        // draw background color
         canvas.drawColor(Color.WHITE)
 
+        // draw grid
         horizontalLines.forEachIndexed { idx, line ->
             borderPaint.strokeWidth = if ((idx + 1) % 3 == 0) 5f else 1f
             canvas.drawLines(line, borderPaint)
@@ -67,52 +69,70 @@ class SudokuBoard @JvmOverloads constructor(
             canvas.drawLines(line, borderPaint)
         }
 
-        puzzle?.let {
-            it.forEachIndexed { row, intArray ->
-                intArray.forEachIndexed { col, int ->
-                    if (int != 0) {
-                        val cellValue = "$int"
-                        val labelWidth = textPaint.measureText(cellValue)
-                        val labelHeight = textPaint.textSize
-                        // Log.d(TAG, "cellSize: $cellSize, labelHeight: $labelHeight, textSize: ${textPaint.textSize}")
-                        canvas.drawText(cellValue, horizontalLines[col][3] - (cellSize + labelWidth) / 2, verticalLines[row][0] - (cellSize - labelHeight) / 2, textPaint)
-                    }
+        val puzzleSnapshot = puzzle
+        if (puzzleSnapshot == null) {
+            return
+        }
+
+        puzzleSnapshot.forEachIndexed { row, intArray ->
+            intArray.forEachIndexed { col, int ->
+                if (int != 0) {
+                    val cellValue = "$int"
+                    val labelWidth = textPaint.measureText(cellValue)
+                    val labelHeight = textPaint.textSize
+                    // Log.d(TAG, "cellSize: $cellSize, labelHeight: $labelHeight, textSize: ${textPaint.textSize}")
+                    canvas.drawText(cellValue, horizontalLines[col][3] - (cellSize + labelWidth) / 2, verticalLines[row][0] - (cellSize - labelHeight) / 2, textPaint)
                 }
             }
         }
 
         focusedCell?.let {
             val highlightedCells = mutableListOf<Pair<Int, Int>>()
-            val boundary = findBoundary(it)
-            focusedCellPaint.color = Color.argb(80, 0, 0, 255) // blue
-            canvas.drawRect(boundary[0], boundary[1], boundary[2], boundary[3], focusedCellPaint)
+            fun highlightCell(cell: Pair<Int, Int>, color: Int) {
+                val boundary = findBoundary(cell)
+                focusedCellPaint.color = color
+                canvas.drawRect(boundary[0], boundary[1], boundary[2], boundary[3], focusedCellPaint)
+            }
+
+            // focused cell
+            highlightCell(it, Color.argb(80, 0, 0, 255))// blue
             highlightedCells.add(it)
 
-            focusedCellPaint.color = Color.argb(60, 128, 128, 128) // grey
-            val sameRow = List(9) { idx -> pairOf(idx, it.second) }
-            sameRow.forEach { cell ->
+            // cells in the same row
+            val sameRowCells = List(9) { idx -> pairOf(idx, it.second) }
+            sameRowCells.forEach { cell ->
                 if (!highlightedCells.contains(cell)) {
-                    val boundary = findBoundary(cell)
-                    canvas.drawRect(boundary[0], boundary[1], boundary[2], boundary[3], focusedCellPaint)
+                    highlightCell(cell, Color.argb(60, 128, 128, 128))// grey
                     highlightedCells.add(cell)
                 }
             }
 
-            val sameCol = List(9) { idx -> pairOf(it.first, idx) }
-            sameCol.forEach { cell ->
+            // cells in the same column
+            val sameColCells = List(9) { idx -> pairOf(it.first, idx) }
+            sameColCells.forEach { cell ->
                 if (!highlightedCells.contains(cell)) {
-                    val boundary = findBoundary(cell)
-                    canvas.drawRect(boundary[0], boundary[1], boundary[2], boundary[3], focusedCellPaint)
+                    highlightCell(cell, Color.argb(60, 128, 128, 128))// grey
                     highlightedCells.add(cell)
                 }
             }
 
-            val sameSubGrid = getSubGridCells(it)
-            sameSubGrid.forEach { cell ->
+            val sameSubGridCells = getSubGridCells(it)
+            sameSubGridCells.forEach { cell ->
                 if (!highlightedCells.contains(cell)) {
-                    val boundary = findBoundary(cell)
-                    canvas.drawRect(boundary[0], boundary[1], boundary[2], boundary[3], focusedCellPaint)
+                    highlightCell(cell, Color.argb(60, 128, 128, 128))// grey
                     highlightedCells.add(cell)
+                }
+            }
+
+            val cellValue = puzzleSnapshot[it.second][it.first]
+            Log.d(TAG, "cellValue: $cellValue")
+            if (cellValue in 1..9) {
+                val sameValueCells = findSameValueCells(puzzleSnapshot, cellValue)
+                sameValueCells.forEach { cell ->
+                    if (!highlightedCells.contains(cell)) {
+                        highlightCell(cell, Color.argb(128, 80, 80, 80))// dark grey
+                        highlightedCells.add(cell)
+                    }
                 }
             }
         }
@@ -129,6 +149,20 @@ class SudokuBoard @JvmOverloads constructor(
         for (r in startRow until startRow + subGridSize) {
             for (c in startCol until startCol + subGridSize) {
                 cells.add(Pair(r, c))
+            }
+        }
+
+        return cells
+    }
+
+    fun findSameValueCells(sudoku: Array<IntArray>, value: Int): List<Pair<Int, Int>> {
+        val cells = mutableListOf<Pair<Int, Int>>()
+
+        for (row in sudoku.indices) {
+            for (col in sudoku[row].indices) {
+                if (sudoku[row][col] == value) {
+                    cells.add(Pair(col, row))
+                }
             }
         }
 
