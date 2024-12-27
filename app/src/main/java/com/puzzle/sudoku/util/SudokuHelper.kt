@@ -84,14 +84,14 @@ object SudokuHelper {
                 // Check if the puzzle still has a unique solution
                 if (possibleSolutionCount == 1) {
                     // Log.d(TAG, "removed: $removed -> find next\n ")
-                    positions.put(Pair(i, j), puzzle[i][j]) // Track removed position
+                    positions.put(Pair(j, i), puzzle[i][j]) // Track removed position
                     puzzle[i][j] = 0
                     removed++
                 }
             }
         }
 
-        return puzzle to positions.toSortedMap(compareBy<Pair<Int, Int>> { it.first }.thenBy { it.second })
+        return puzzle to positions.toSortedMap(compareBy<Pair<Int, Int>> { it.second }.thenBy { it.first })
     }
 
     fun countSolutions(board: Array<IntArray>): Int {

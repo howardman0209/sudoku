@@ -164,15 +164,16 @@ class SudokuBoard @JvmOverloads constructor(
                 }
             }
 
-            val sameSubGridCells = getSubGridCells(it)
-            sameSubGridCells.forEach { cell ->
+            // cells in the same box
+            val sameBoxCells = getSameBoxCells(it)
+            sameBoxCells.forEach { cell ->
                 if (!highlightedCells.contains(cell)) {
                     highlightCell(cell, Color.argb(60, 128, 128, 128))// grey
                     highlightedCells.add(cell)
                 }
             }
 
-            val cellValue = puzzleSnapshot[it.second][it.first]
+            val cellValue = answersData[it] ?: puzzleSnapshot[it.second][it.first]
             // Log.d(TAG, "cellValue: $cellValue")
             if (cellValue in 1..9) {
                 val sameValueCells = findSameValueCells(puzzleSnapshot, cellValue)
@@ -186,7 +187,7 @@ class SudokuBoard @JvmOverloads constructor(
         }
     }
 
-    fun getSubGridCells(cell: Pair<Int, Int>): List<Pair<Int, Int>> {
+    fun getSameBoxCells(cell: Pair<Int, Int>): List<Pair<Int, Int>> {
         val (row, col) = cell
         val subGridSize = 3 // For a standard 9x9 Sudoku
         val startRow = (row / subGridSize) * subGridSize
@@ -213,6 +214,9 @@ class SudokuBoard @JvmOverloads constructor(
                 }
             }
         }
+
+        val answerCells = answersData.filter { it.value == value }.keys
+        cells.addAll(answerCells)
 
         return cells
     }
@@ -311,6 +315,8 @@ class SudokuBoard @JvmOverloads constructor(
 
     fun markOrEraseNote(note: Int) {
         val cell = focusedCell ?: run { return }
+        val puzzleSnapshot = puzzle ?: run { return }
+        if (puzzleSnapshot[cell.second][cell.first] != 0) return
         val notes = notesData.getOrDefault(cell, emptyList())
         val updatedNotes = if (!notes.contains(note)) {
             notes.plus(note)
@@ -323,6 +329,8 @@ class SudokuBoard @JvmOverloads constructor(
 
     fun markOrEraseAnswer(answer: Int) {
         val cell = focusedCell ?: run { return }
+        val puzzleSnapshot = puzzle ?: run { return }
+        if (puzzleSnapshot[cell.second][cell.first] != 0) return
         val placed = answersData.getOrDefault(cell, null)
         when {
             placed == null -> answersData.put(cell, answer) // mark
