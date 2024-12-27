@@ -1,4 +1,4 @@
-package com.puzzle.sudoku
+package com.puzzle.sudoku.ui.component
 
 import android.content.Context
 import android.graphics.Color
@@ -7,8 +7,8 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.puzzle.sudoku.R
 import com.puzzle.sudoku.databinding.DialogProgressBinding
-import kotlin.apply
 
 class ProgressDialog(context: Context) : MaterialAlertDialogBuilder(context) {
     init {

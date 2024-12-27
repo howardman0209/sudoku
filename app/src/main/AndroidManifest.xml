@@ -14,7 +14,7 @@
         android:theme="@style/Theme.Sudoku"
         tools:targetApi="31">
         <activity
-            android:name=".SudokuActivity"
+            android:name=".ui.activity.SudokuActivity"
             android:exported="true"
             android:noHistory="false"
             tools:ignore="LockedOrientationActivity">

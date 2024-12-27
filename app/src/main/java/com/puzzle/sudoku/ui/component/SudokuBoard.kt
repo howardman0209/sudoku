@@ -1,14 +1,18 @@
-package com.puzzle.sudoku
+package com.puzzle.sudoku.ui.component
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
+import android.view.SoundEffectConstants
 import android.view.View
+import com.puzzle.sudoku.R
+import com.puzzle.sudoku.extension.measureTextHeight
 
 class SudokuBoard @JvmOverloads constructor(
     context: Context,
@@ -21,6 +25,8 @@ class SudokuBoard @JvmOverloads constructor(
 
     private val cellSize by lazy { height.toFloat() / 9 }
     private var puzzle: Array<IntArray>? = null
+    private var solution: Map<Pair<Int, Int>, Int>? = null
+    private val notesData: MutableMap<Pair<Int, Int>, List<Int>> = mutableMapOf()
     private var pressedCell: Pair<Int, Int>? = null
     private var focusedCell: Pair<Int, Int>? = null
 
@@ -30,6 +36,15 @@ class SudokuBoard @JvmOverloads constructor(
 
     private val horizontalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(0f, cellSize * (idx + 1), width.toFloat(), cellSize * (idx + 1)) } }
     private val verticalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(cellSize * (idx + 1), 0f, cellSize * (idx + 1), height.toFloat()) } }
+
+    private val notePaint by lazy {
+        Paint().apply {
+            color = Color.argb(255, 100, 100, 100)
+            isAntiAlias = true
+            typeface = Typeface.DEFAULT_BOLD
+            textSize = cellSize / 4
+        }
+    }
 
     private val textPaint by lazy {
         Paint().apply {
@@ -79,11 +94,15 @@ class SudokuBoard @JvmOverloads constructor(
                 if (int != 0) {
                     val cellValue = "$int"
                     val labelWidth = textPaint.measureText(cellValue)
-                    val labelHeight = textPaint.fontMetrics.let { it.descent - it.ascent }
-                    Log.d(TAG, "cellSize: $cellSize, labelHeight: $labelHeight, textSize: ${textPaint.textSize}")
-                    canvas.drawText(cellValue, verticalLines[col][0] - (cellSize + labelWidth) / 2, horizontalLines[row][1] - (labelHeight) / 4, textPaint)
+                    val labelHeight = textPaint.measureTextHeight(cellValue)
+                    // Log.d(TAG, "cellSize: $cellSize, labelHeight: $labelHeight, textSize: ${textPaint.textSize}")
+                    canvas.drawText(cellValue, verticalLines[col][0] - (cellSize + labelWidth) / 2, horizontalLines[row][1] - (cellSize - labelHeight) / 2, textPaint)
                 }
             }
+        }
+
+        notesData.forEach { cell, notes ->
+            markNotes(canvas, cell, notes)
         }
 
         focusedCell?.let {
@@ -173,7 +192,7 @@ class SudokuBoard @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                playSoundEffect(android.view.SoundEffectConstants.CLICK)
+                playSoundEffect(SoundEffectConstants.CLICK)
                 val x = event.x
                 val y = event.y
 //                Log.d(TAG, "ACTION_DOWN - ($x, $y)")
@@ -233,8 +252,40 @@ class SudokuBoard @JvmOverloads constructor(
         return floatArrayOf(xRange.start, yRange.start, xRange.endExclusive, yRange.endExclusive)
     }
 
-    fun updatePuzzle(puzzle: Array<IntArray>?) {
+    private fun markNotes(canvas: Canvas, cell: Pair<Int, Int>, notes: List<Int>) {
+        val boundary = findBoundary(cell)
+        val subCellSize = cellSize / 3
+        notes.forEach {
+            val xOffset = subCellSize * ((it - 1) % 3)
+            val yOffset = subCellSize * ((it - 1) / 3)
+            val xStart = boundary[0] + notePaint.measureText("$it") / 2 + xOffset
+            val yStart = boundary[1] + notePaint.textSize + yOffset
+//            Log.d(TAG, "note: $it, offset: $offset")
+            canvas.drawText("$it", xStart, yStart, notePaint)
+        }
+    }
+
+    fun updatePuzzle(puzzle: Array<IntArray>?, solution: Map<Pair<Int, Int>, Int>?) {
         this.puzzle = puzzle
+        this.solution = solution
+        invalidate()
+    }
+
+    fun markOrEraseNote(note: Int) {
+        val cell = focusedCell ?: run { return }
+        val notes = notesData.getOrDefault(cell, emptyList())
+        val updatedNotes = if (!notes.contains(note)) {
+            notes.plus(note)
+        } else {
+            notes.minus(note)
+        }
+        notesData.put(cell, updatedNotes)
+        invalidate()
+    }
+
+    fun clearCell() {
+        val cell = focusedCell ?: run { return }
+        notesData.put(cell, emptyList())
         invalidate()
     }
 

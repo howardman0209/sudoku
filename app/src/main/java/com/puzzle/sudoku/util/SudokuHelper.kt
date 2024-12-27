@@ -1,4 +1,4 @@
-package com.puzzle.sudoku
+package com.puzzle.sudoku.util
 
 import android.util.Log
 import kotlin.random.Random
@@ -9,8 +9,8 @@ object SudokuHelper {
     fun generatePuzzleAndSolutionSet(numberOfEmptyCell: Int): Pair<Array<IntArray>, Map<Pair<Int, Int>, Int>> {
         val solvedBoard = generateSolvedSudoku()
         val puzzleAndSolutionPair = createPuzzleAndSolutionPair(solvedBoard, numberOfEmptyCell)
-        printSudoku(puzzleAndSolutionPair.first)
-        Log.d(TAG, puzzleAndSolutionPair.second.toString())
+        printSudoku(puzzleAndSolutionPair.first) // print puzzle
+        Log.d(TAG, "(${puzzleAndSolutionPair.second.size}) ${puzzleAndSolutionPair.second}") // print solution
         return puzzleAndSolutionPair
     }
 
@@ -71,8 +71,8 @@ object SudokuHelper {
         // Continue removing cells until we reach the desired count
         while (removed < cellsToRemove) {
             // Randomly select a cell to remove
-            val i = Random.nextInt(0, 9)
-            val j = Random.nextInt(0, 9)
+            val i = Random.Default.nextInt(0, 9)
+            val j = Random.Default.nextInt(0, 9)
 
             // Ensure we only remove a filled cell
             if (puzzle[i][j] != 0) {
