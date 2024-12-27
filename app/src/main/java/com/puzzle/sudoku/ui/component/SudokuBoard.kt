@@ -23,19 +23,25 @@ class SudokuBoard @JvmOverloads constructor(
         const val TAG = "SudokuBoard"
     }
 
+    // rendering params
     private val cellSize by lazy { height.toFloat() / 9 }
+    private val horizontalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(0f, cellSize * (idx + 1), width.toFloat(), cellSize * (idx + 1)) } }
+    private val verticalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(cellSize * (idx + 1), 0f, cellSize * (idx + 1), height.toFloat()) } }
+
+    // game setting
     private var puzzle: Array<IntArray>? = null
     private var solution: Map<Pair<Int, Int>, Int>? = null
+
+    // player's interaction
+    private val answersData: MutableMap<Pair<Int, Int>, Int?> = mutableMapOf()
     private val notesData: MutableMap<Pair<Int, Int>, List<Int>> = mutableMapOf()
+
     private var pressedCell: Pair<Int, Int>? = null
     private var focusedCell: Pair<Int, Int>? = null
 
     private val borderPaint = Paint().apply {
         color = Color.BLACK
     }
-
-    private val horizontalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(0f, cellSize * (idx + 1), width.toFloat(), cellSize * (idx + 1)) } }
-    private val verticalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(cellSize * (idx + 1), 0f, cellSize * (idx + 1), height.toFloat()) } }
 
     private val notePaint by lazy {
         Paint().apply {
@@ -46,9 +52,17 @@ class SudokuBoard @JvmOverloads constructor(
         }
     }
 
-    private val textPaint by lazy {
+    private val labelPaint by lazy {
         Paint().apply {
             color = Color.BLACK
+            isAntiAlias = true
+            textSize = cellSize * 3 / 4
+        }
+    }
+
+    private val answerPaint by lazy {
+        Paint().apply {
+            color = context.getColor(R.color.purple_700)
             isAntiAlias = true
             textSize = cellSize * 3 / 4
         }
@@ -92,17 +106,32 @@ class SudokuBoard @JvmOverloads constructor(
         puzzleSnapshot.forEachIndexed { row, intArray ->
             intArray.forEachIndexed { col, int ->
                 if (int != 0) {
-                    val cellValue = "$int"
-                    val labelWidth = textPaint.measureText(cellValue)
-                    val labelHeight = textPaint.measureTextHeight(cellValue)
+                    val label = "$int"
+                    val labelWidth = labelPaint.measureText(label)
+                    val labelHeight = labelPaint.measureTextHeight(label)
                     // Log.d(TAG, "cellSize: $cellSize, labelHeight: $labelHeight, textSize: ${textPaint.textSize}")
-                    canvas.drawText(cellValue, verticalLines[col][0] - (cellSize + labelWidth) / 2, horizontalLines[row][1] - (cellSize - labelHeight) / 2, textPaint)
+                    canvas.drawText(label, verticalLines[col][0] - (cellSize + labelWidth) / 2, horizontalLines[row][1] - (cellSize - labelHeight) / 2, labelPaint)
                 }
             }
         }
 
         notesData.forEach { cell, notes ->
-            markNotes(canvas, cell, notes)
+            if (puzzleSnapshot[cell.second][cell.first] == 0) { // mark only in empty cell
+                markNotes(canvas, cell, notes)
+            }
+        }
+
+        answersData.forEach { cell, ans ->
+            if (puzzleSnapshot[cell.second][cell.first] == 0) { // mark only in empty cell
+                if (ans != null) {
+                    if (ans == solution?.get(cell)) {
+                        answerPaint.color = context.getColor(R.color.purple_700)
+                    } else {
+                        answerPaint.color = Color.RED
+                    }
+                    markAnswer(canvas, cell, ans)
+                }
+            }
         }
 
         focusedCell?.let {
@@ -144,7 +173,7 @@ class SudokuBoard @JvmOverloads constructor(
             }
 
             val cellValue = puzzleSnapshot[it.second][it.first]
-            Log.d(TAG, "cellValue: $cellValue")
+            // Log.d(TAG, "cellValue: $cellValue")
             if (cellValue in 1..9) {
                 val sameValueCells = findSameValueCells(puzzleSnapshot, cellValue)
                 sameValueCells.forEach { cell ->
@@ -211,7 +240,7 @@ class SudokuBoard @JvmOverloads constructor(
                 if (releasedCell != null && releasedCell == pressedCell) {
                     if (focusedCell != releasedCell) {
                         focusedCell = releasedCell
-                        Log.d(TAG, "focusedCell - $focusedCell")
+                        // Log.d(TAG, "focusedCell - $focusedCell")
                     } else {
                         focusedCell = null
                     }
@@ -265,6 +294,15 @@ class SudokuBoard @JvmOverloads constructor(
         }
     }
 
+    private fun markAnswer(canvas: Canvas, cell: Pair<Int, Int>, answer: Int) {
+        val mark = answer.toString()
+        val boundary = findBoundary(cell)
+        val markWidth = labelPaint.measureText(mark)
+        val markHeight = labelPaint.measureTextHeight(mark)
+        // boundary[1]: y start
+        canvas.drawText(mark, boundary[0] + (cellSize - markWidth) / 2, boundary[1] + cellSize - (cellSize - markHeight) / 2, answerPaint)
+    }
+
     fun updatePuzzle(puzzle: Array<IntArray>?, solution: Map<Pair<Int, Int>, Int>?) {
         this.puzzle = puzzle
         this.solution = solution
@@ -283,9 +321,21 @@ class SudokuBoard @JvmOverloads constructor(
         invalidate()
     }
 
+    fun markOrEraseAnswer(answer: Int) {
+        val cell = focusedCell ?: run { return }
+        val placed = answersData.getOrDefault(cell, null)
+        when {
+            placed == null -> answersData.put(cell, answer) // mark
+            placed == answer -> answersData.put(cell, null) // erase
+            placed != answer -> answersData.put(cell, answer) // update
+        }
+        invalidate()
+    }
+
     fun clearCell() {
         val cell = focusedCell ?: run { return }
         notesData.put(cell, emptyList())
+        answersData.put(cell, null)
         invalidate()
     }
 

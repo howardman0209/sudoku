@@ -90,9 +90,9 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
     }
 
     override fun onKeyInput(key: Int) {
-        Log.i(TAG, "onKeyInput - key: $key")
+        // Log.i(TAG, "onKeyInput - key: $key")
         if (binding.checkBoxNote.isChecked != true) {
-
+            binding.sudokuBoard.markOrEraseAnswer(key)
         } else {
             binding.sudokuBoard.markOrEraseNote(key)
         }
