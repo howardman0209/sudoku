@@ -99,7 +99,7 @@ class SudokuActivity : AppCompatActivity() {
             super.onBackPressed()
         } else {
             firstBackPressedTime = System.currentTimeMillis()
-            Toast.makeText(this, "click exit again", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.toast_message_click_exit_again, Toast.LENGTH_SHORT).show()
         }
     }
 }

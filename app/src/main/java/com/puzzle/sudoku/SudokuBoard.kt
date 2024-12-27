@@ -79,9 +79,9 @@ class SudokuBoard @JvmOverloads constructor(
                 if (int != 0) {
                     val cellValue = "$int"
                     val labelWidth = textPaint.measureText(cellValue)
-                    val labelHeight = textPaint.textSize
-                    // Log.d(TAG, "cellSize: $cellSize, labelHeight: $labelHeight, textSize: ${textPaint.textSize}")
-                    canvas.drawText(cellValue, horizontalLines[col][3] - (cellSize + labelWidth) / 2, verticalLines[row][0] - (cellSize - labelHeight) / 2, textPaint)
+                    val labelHeight = textPaint.fontMetrics.let { it.descent - it.ascent }
+                    Log.d(TAG, "cellSize: $cellSize, labelHeight: $labelHeight, textSize: ${textPaint.textSize}")
+                    canvas.drawText(cellValue, verticalLines[col][0] - (cellSize + labelWidth) / 2, horizontalLines[row][1] - (labelHeight) / 4, textPaint)
                 }
             }
         }
