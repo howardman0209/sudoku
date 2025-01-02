@@ -307,10 +307,16 @@ class SudokuBoard @JvmOverloads constructor(
         canvas.drawText(mark, boundary[0] + (cellSize - markWidth) / 2, boundary[1] + cellSize - (cellSize - markHeight) / 2, answerPaint)
     }
 
-    fun updatePuzzle(puzzle: Array<IntArray>?, solution: Map<Pair<Int, Int>, Int>?) {
+    private fun updatePuzzle(puzzle: Array<IntArray>?, solution: Map<Pair<Int, Int>, Int>?) {
         this.puzzle = puzzle
         this.solution = solution
         invalidate()
+    }
+
+    fun initBoard(puzzle: Array<IntArray>?, solution: Map<Pair<Int, Int>, Int>?) {
+        answersData.clear()
+        notesData.clear()
+        updatePuzzle(puzzle, solution)
     }
 
     fun markOrEraseNote(note: Int) {

@@ -39,7 +39,7 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
 
                 withContext(Dispatchers.Main) {
                     showLoadingIndicator(false)
-                    syncPuzzleBoard()
+                    initPuzzleBoard()
                 }
             }
         }
@@ -74,8 +74,8 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
         }
     }
 
-    private fun syncPuzzleBoard() {
-        binding.sudokuBoard.updatePuzzle(puzzle, solution)
+    private fun initPuzzleBoard() {
+        binding.sudokuBoard.initBoard(puzzle, solution)
     }
 
 
