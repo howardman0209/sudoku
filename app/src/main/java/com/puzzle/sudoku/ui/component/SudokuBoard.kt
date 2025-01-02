@@ -339,7 +339,11 @@ class SudokuBoard @JvmOverloads constructor(
         if (puzzleSnapshot[cell.second][cell.first] != 0) return
         val placed = answersData.getOrDefault(cell, null)
         when {
-            placed == null -> answersData.put(cell, answer) // mark
+            placed == null -> {
+                notesData.put(cell, emptyList())
+                answersData.put(cell, answer) // mark
+            }
+
             placed == answer -> answersData.put(cell, null) // erase
             placed != answer -> answersData.put(cell, answer) // update
         }
