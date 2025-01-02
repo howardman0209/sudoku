@@ -33,7 +33,7 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
         binding.btnNewGame.setOnClickListener {
             showLoadingIndicator(true)
             lifecycleScope.launch(Dispatchers.Default) {
-                val (puzzle, solution) = SudokuHelper.generatePuzzleAndSolutionSet(numberOfEmptyCell = 53)
+                val (puzzle, solution) = SudokuHelper.generatePuzzleAndSolutionSet(numberOfEmptyCell = 56)
                 this@SudokuActivity.puzzle = puzzle
                 this@SudokuActivity.solution = solution
 
