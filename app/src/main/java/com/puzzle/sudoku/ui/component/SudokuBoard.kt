@@ -62,7 +62,7 @@ class SudokuBoard @JvmOverloads constructor(
 
     private val answerPaint by lazy {
         Paint().apply {
-            color = context.getColor(R.color.purple_700)
+            color = context.getColor(R.color.purple_500)
             isAntiAlias = true
             textSize = cellSize * 3 / 4
         }
@@ -125,7 +125,7 @@ class SudokuBoard @JvmOverloads constructor(
             if (puzzleSnapshot[cell.second][cell.first] == 0) { // mark only in empty cell
                 if (ans != null) {
                     if (ans == solution?.get(cell)) {
-                        answerPaint.color = context.getColor(R.color.purple_700)
+                        answerPaint.color = context.getColor(R.color.purple_500)
                     } else {
                         answerPaint.color = Color.RED
                     }
@@ -323,6 +323,7 @@ class SudokuBoard @JvmOverloads constructor(
         val cell = focusedCell ?: run { return }
         val puzzleSnapshot = puzzle ?: run { return }
         if (puzzleSnapshot[cell.second][cell.first] != 0) return
+        if (answersData[cell] != null) return
         val notes = notesData.getOrDefault(cell, emptyList())
         val updatedNotes = if (!notes.contains(note)) {
             notes.plus(note)
