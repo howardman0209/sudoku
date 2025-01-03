@@ -1,7 +1,7 @@
 package com.puzzle.sudoku.util
 
 import android.util.Log
-import kotlin.random.Random
+import java.util.LinkedList
 
 object SudokuHelper {
     const val TAG = "SudokuHelper"
@@ -66,32 +66,40 @@ object SudokuHelper {
         var removed = 0
 
         // Keep track of the positions of cells removed
-        val positions = mutableMapOf<Pair<Int, Int>, Int>()
+        val solution = mutableMapOf<Pair<Int, Int>, Int>()
+        val cellIndices = LinkedList<Int>(List(81) { it }.shuffled())
 
         // Continue removing cells until we reach the desired count
         while (removed < cellsToRemove) {
             // Randomly select a cell to remove
-            val i = Random.Default.nextInt(0, 9)
-            val j = Random.Default.nextInt(0, 9)
+            val cellIndex = cellIndices.pop()
+            val i = cellIndex / 9
+            val j = cellIndex % 9
+
+            if (cellIndices.isEmpty()) { // cannot remove clue anymore
+//                Log.d(TAG, "cannot remove clue anymore")
+                break
+            }
 
             // Ensure we only remove a filled cell
             if (puzzle[i][j] != 0) {
-                // Log.d(TAG, "chosen cell: i:$i, j:$j")
+//                printSudoku(puzzle)
+//                Log.d(TAG, "removed: $removed, chosen cell: i:$i, j:$j")
                 val temp = puzzle.map { it.clone() }.toTypedArray() // Clone the solved board
                 temp[i][j] = 0 // Remove the cell
                 val possibleSolutionCount = countSolutions(temp)
-                // Log.d(TAG, "puzzle: ${printSudoku(temp)}, possibleSolutionCount: $possibleSolutionCount")
+//                Log.d(TAG, "possibleSolutionCount: $possibleSolutionCount")
                 // Check if the puzzle still has a unique solution
                 if (possibleSolutionCount == 1) {
-                    // Log.d(TAG, "removed: $removed -> find next\n ")
-                    positions.put(Pair(j, i), puzzle[i][j]) // Track removed position
+//                    Log.d(TAG, "removed: $removed -> find next\n ")
+                    solution.put(Pair(j, i), puzzle[i][j]) // Track removed position
                     puzzle[i][j] = 0
                     removed++
                 }
             }
         }
 
-        return puzzle to positions.toSortedMap(compareBy<Pair<Int, Int>> { it.second }.thenBy { it.first })
+        return puzzle to solution.toSortedMap(compareBy<Pair<Int, Int>> { it.second }.thenBy { it.first })
     }
 
     fun countSolutions(board: Array<IntArray>): Int {
