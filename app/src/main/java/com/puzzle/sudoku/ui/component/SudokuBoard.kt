@@ -23,13 +23,15 @@ class SudokuBoard @JvmOverloads constructor(
         const val TAG = "SudokuBoard"
     }
 
+    private var listener: EventListener? = null
+
     // rendering params
     private val cellSize by lazy { height.toFloat() / 9 }
     private val horizontalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(0f, cellSize * (idx + 1), width.toFloat(), cellSize * (idx + 1)) } }
     private val verticalLines by lazy { List<FloatArray>(9) { idx -> floatArrayOf(cellSize * (idx + 1), 0f, cellSize * (idx + 1), height.toFloat()) } }
 
     // game setting
-    private var puzzle: Array<IntArray>? = null
+    private var puzzle: Array<IntArray>? = Array(9) { IntArray(9) }
     private var solution: Map<Pair<Int, Int>, Int>? = null
 
     // player's interaction
@@ -187,7 +189,7 @@ class SudokuBoard @JvmOverloads constructor(
         }
     }
 
-    fun getSameBoxCells(cell: Pair<Int, Int>): List<Pair<Int, Int>> {
+    private fun getSameBoxCells(cell: Pair<Int, Int>): List<Pair<Int, Int>> {
         val (row, col) = cell
         val subGridSize = 3 // For a standard 9x9 Sudoku
         val startRow = (row / subGridSize) * subGridSize
@@ -204,7 +206,7 @@ class SudokuBoard @JvmOverloads constructor(
         return cells
     }
 
-    fun findSameValueCells(sudoku: Array<IntArray>, value: Int): List<Pair<Int, Int>> {
+    private fun findSameValueCells(sudoku: Array<IntArray>, value: Int): List<Pair<Int, Int>> {
         val cells = mutableListOf<Pair<Int, Int>>()
 
         for (row in sudoku.indices) {
@@ -248,6 +250,7 @@ class SudokuBoard @JvmOverloads constructor(
                     } else {
                         focusedCell = null
                     }
+                    listener?.onCellFocused(focusedCell)
                 }
                 pressedCell = null
                 invalidate() // Request to redraw
@@ -313,13 +316,18 @@ class SudokuBoard @JvmOverloads constructor(
         invalidate()
     }
 
+    fun setListener(listener: EventListener) {
+        this.listener = listener
+    }
+
     fun initBoard(puzzle: Array<IntArray>?, solution: Map<Pair<Int, Int>, Int>?) {
         answersData.clear()
         notesData.clear()
         updatePuzzle(puzzle, solution)
     }
 
-    fun markOrEraseNote(note: Int) {
+    fun markOrEraseNote(note: Int, focus: Pair<Int, Int>? = null) {
+        focus?.let { focusedCell = it }
         val cell = focusedCell ?: run { return }
         val puzzleSnapshot = puzzle ?: run { return }
         if (puzzleSnapshot[cell.second][cell.first] != 0) return
@@ -334,7 +342,8 @@ class SudokuBoard @JvmOverloads constructor(
         invalidate()
     }
 
-    fun markOrEraseAnswer(answer: Int) {
+    fun markOrEraseAnswer(answer: Int, focus: Pair<Int, Int>? = null) {
+        focus?.let { focusedCell = it }
         val cell = focusedCell ?: run { return }
         val puzzleSnapshot = puzzle ?: run { return }
         if (puzzleSnapshot[cell.second][cell.first] != 0) return
@@ -360,5 +369,9 @@ class SudokuBoard @JvmOverloads constructor(
 
     fun <A, B> pairOf(first: A, second: B): Pair<A, B> {
         return Pair(first, second)
+    }
+
+    interface EventListener {
+        fun onCellFocused(cell: Pair<Int, Int>?)
     }
 }

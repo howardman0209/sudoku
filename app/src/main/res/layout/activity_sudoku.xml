@@ -2,6 +2,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <data>
+
+        <variable
+            name="view"
+            type="com.puzzle.sudoku.ui.activity.SudokuActivity" />
+    </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -13,7 +20,8 @@
             android:layout_margin="8dp"
             android:text="@string/button_new_game"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:showIf="@{!view.isEditing}" />
 
         <androidx.appcompat.widget.AppCompatSpinner
             android:id="@+id/spinnerDifficulty"
@@ -22,7 +30,20 @@
             android:layout_margin="8dp"
             android:spinnerMode="dropdown"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:showIf="@{!view.isEditing}" />
+
+        <TextView
+            android:id="@+id/tvEditingLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_editing"
+            android:textAppearance="?textAppearanceHeadline4"
+            app:layout_constraintBottom_toTopOf="@+id/guidelineTop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:showIf="@{view.isEditing}" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guidelineTop"
@@ -41,34 +62,40 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/guidelineTop" />
 
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/checkBoxNote"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/label_note"
-            android:textAppearance="?textAppearanceHeadline6"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/sudokuBoard" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/btnClear"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:clickable="true"
-            android:drawableStart="@drawable/ic_baseline_delete_forever_24"
-            android:drawableTint="@color/white"
-            android:focusable="true"
-            android:foreground="?selectableItemBackground"
-            android:paddingVertical="8dp"
-            android:text="@string/button_clear"
-            android:textAlignment="center"
-            android:textAppearance="?textAppearanceHeadline6"
-            app:layout_constraintEnd_toEndOf="@id/checkBoxNote"
-            app:layout_constraintStart_toStartOf="@+id/checkBoxNote"
-            app:layout_constraintTop_toBottomOf="@+id/checkBoxNote" />
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
+            app:layout_constraintTop_toBottomOf="@+id/sudokuBoard">
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/checkBoxNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/label_note"
+                android:textAlignment="center"
+                android:textAppearance="?textAppearanceHeadline6"
+                app:showIf="@{!view.isEditing}" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/btnClear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clickable="true"
+                android:drawableStart="@drawable/ic_baseline_delete_forever_24"
+                android:drawableTint="@color/white"
+                android:focusable="true"
+                android:foreground="?selectableItemBackground"
+                android:paddingVertical="8dp"
+                android:text="@string/button_clear"
+                android:textAlignment="center"
+                android:textAppearance="?textAppearanceHeadline6" />
+        </LinearLayout>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guidelineVertical"
@@ -96,12 +123,12 @@
             app:layout_constraintGuide_percent=".9" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/btnTips"
+            android:id="@+id/btnEdit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:contentDescription="@string/label_tips"
-            android:src="@drawable/ic_baseline_lightbulb_outline_24"
+            android:src="@drawable/ic_baseline_edit_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

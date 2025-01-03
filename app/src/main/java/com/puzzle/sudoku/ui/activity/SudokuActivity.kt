@@ -6,34 +6,43 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.databinding.ObservableField
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.puzzle.sudoku.ui.component.InputKeypad
 import com.puzzle.sudoku.R
 import com.puzzle.sudoku.util.SudokuHelper
 import com.puzzle.sudoku.databinding.ActivitySudokuBinding
 import com.puzzle.sudoku.model.Difficulty
+import com.puzzle.sudoku.ui.component.SudokuBoard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.random.Random
 
-class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), InputKeypad.InputListener {
+class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), InputKeypad.InputListener, SudokuBoard.EventListener {
     companion object {
         const val TAG = "SudokuActivity"
     }
 
     override val layoutResourceId: Int = R.layout.activity_sudoku
-    private var puzzle: Array<IntArray>? = null
+    private var puzzle: Array<IntArray> = Array(9) { IntArray(9) }
     private var solution: Map<Pair<Int, Int>, Int>? = null
     private var firstBackPressedTime = 0L
     private var difficulty = Difficulty.HARD
+    private var focusedCell: Pair<Int, Int>? = null
+
+    val isEditing = ObservableField(false)
+
+    override fun setBindingData() {
+        binding.view = this
+        super.setBindingData()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
         binding.inputKeypad.setListener(this)
+        binding.sudokuBoard.setListener(this)
 
         binding.btnNewGame.setOnClickListener {
             showLoadingIndicator(true)
@@ -44,38 +53,61 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
 
                 withContext(Dispatchers.Main) {
                     showLoadingIndicator(false)
-                    initPuzzleBoard()
+                    syncPuzzleBoard()
                 }
             }
         }
 
-        binding.btnTips.setOnClickListener {
-            val items = this@SudokuActivity.solution?.map { "${it.key}=${it.value}" }.orEmpty().toTypedArray()
-            val randomTips = items.getOrNull(Random.Default.nextInt(items.size.coerceAtLeast(1)))
-            MaterialAlertDialogBuilder(this)
-                .setCancelable(false)
-                .setTitle(R.string.label_tips)
-                .setMessage(randomTips)
-                .setNegativeButton(R.string.button_close) { _, _ -> }
-                .create()
-                .show()
-        }
+        binding.btnEdit.apply {
+            setImageResource(if (isEditing.get() == true) R.drawable.ic_round_done_outline_24 else R.drawable.ic_baseline_edit_24)
+            setOnClickListener {
+                val isEditing = isEditing.get() == true
+                showLoadingIndicator(true)
+                lifecycleScope.launch(Dispatchers.IO) {
+                    if (isEditing) {
+                        val trial = SudokuHelper.fillBoard(puzzle.map { it.clone() }.toTypedArray())
+                        if (trial.isNotEmpty()) {
+                            solution = trial
+                            Log.d(TAG, "solution: $solution")
+                        } else {
+                            puzzle = Array(9) { IntArray(9) }
+                        }
+                    } else {
+                        puzzle = Array(9) { IntArray(9) }
+                        solution = null
+                    }
 
-        binding.btnTips.setOnLongClickListener {
-            MaterialAlertDialogBuilder(this)
-                .setCancelable(false)
-                .setTitle(R.string.label_solution)
-                .setItems(
-                    this@SudokuActivity.solution?.map { "${it.key}=${it.value}" }.orEmpty().toTypedArray()
-                ) { _, index -> }
-                .setNegativeButton(R.string.button_close) { _, _ -> }
-                .create()
-                .show()
-            true
+                    withContext(Dispatchers.Main) {
+                        showLoadingIndicator(false)
+                        this@SudokuActivity.isEditing.set(!isEditing)
+                        setImageResource(if (!isEditing) R.drawable.ic_baseline_edit_24 else R.drawable.ic_round_done_outline_24)
+
+                        if (isEditing && solution.isNullOrEmpty()) {
+                            showDialog(this@SudokuActivity, getString(R.string.dialog_message_invalid_sudoku_puzzle))
+                        }
+                        syncPuzzleBoard()
+                    }
+                }
+            }
+
+            setOnLongClickListener {
+                if (isEditing.get() != true) {
+                    solution?.forEach { key, value ->
+                        binding.sudokuBoard.markOrEraseAnswer(value, key)
+                    }
+                }
+                true
+            }
         }
 
         binding.btnClear.setOnClickListener {
-            binding.sudokuBoard.clearCell()
+            if (isEditing.get() == true) {
+                val cell = focusedCell ?: return@setOnClickListener
+                puzzle[cell.second][cell.first] = 0
+                syncPuzzleBoard()
+            } else {
+                binding.sudokuBoard.clearCell()
+            }
         }
 
 
@@ -96,7 +128,7 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
         }
     }
 
-    private fun initPuzzleBoard() {
+    private fun syncPuzzleBoard() {
         binding.sudokuBoard.initBoard(puzzle, solution)
     }
 
@@ -113,10 +145,20 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
 
     override fun onKeyInput(key: Int) {
         // Log.i(TAG, "onKeyInput - key: $key")
-        if (binding.checkBoxNote.isChecked != true) {
-            binding.sudokuBoard.markOrEraseAnswer(key)
+        if (isEditing.get() == true) {
+            val cell = focusedCell ?: return
+            puzzle[cell.second][cell.first] = key
+            syncPuzzleBoard()
         } else {
-            binding.sudokuBoard.markOrEraseNote(key)
+            if (binding.checkBoxNote.isChecked != true) {
+                binding.sudokuBoard.markOrEraseAnswer(key)
+            } else {
+                binding.sudokuBoard.markOrEraseNote(key)
+            }
         }
+    }
+
+    override fun onCellFocused(cell: Pair<Int, Int>?) {
+        focusedCell = cell
     }
 }

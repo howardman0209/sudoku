@@ -7,4 +7,6 @@
     <string name="label_tips">tips</string>
     <string name="toast_message_click_exit_again">Click exit again</string>
     <string name="label_note">Note</string>
+    <string name="label_editing">Editing</string>
+    <string name="dialog_message_invalid_sudoku_puzzle">Invalid Sudoku puzzle</string>
 </resources>

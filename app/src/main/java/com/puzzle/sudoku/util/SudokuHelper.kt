@@ -21,7 +21,13 @@ object SudokuHelper {
         return board
     }
 
-    fun fillBoard(board: Array<IntArray>): Boolean {
+    fun fillBoard(board: Array<IntArray>, filled: Map<Pair<Int, Int>, Int> = emptyMap()): Map<Pair<Int, Int>, Int> { // return filled cell data
+        if (!isValid(board)) {
+            return emptyMap()
+        }
+        val solution: MutableMap<Pair<Int, Int>, Int> = mutableMapOf()
+        solution.putAll(filled)
+
         for (i in 0 until 9) {
             for (j in 0 until 9) {
                 if (board[i][j] == 0) {
@@ -29,17 +35,21 @@ object SudokuHelper {
                     for (num in numbers) {
                         if (isSafe(board, i, j, num)) {
                             board[i][j] = num // Place the number
-                            if (fillBoard(board)) {
-                                return true
+                            solution.put(Pair(j, i), num)
+                            val trial = fillBoard(board, solution)
+                            if (trial.isNotEmpty()) {
+                                solution.putAll(trial)
+                                return solution
                             }
+                            solution.remove(Pair(j, i))
                             board[i][j] = 0 // Backtrack
                         }
                     }
-                    return false
+                    return emptyMap()
                 }
             }
         }
-        return true
+        return solution
     }
 
     fun isSafe(board: Array<IntArray>, row: Int, col: Int, num: Int): Boolean {
@@ -62,6 +72,30 @@ object SudokuHelper {
         return true
     }
 
+    fun isValid(board: Array<IntArray>): Boolean {
+        val seen = HashSet<String>()
+
+        for (i in 0..8) {
+            for (j in 0..8) {
+                val num = board[i][j]
+                if (num != 0) { // Assuming 0 represents an empty cell
+                    val rowKey = "row_$i$num"
+                    val colKey = "col_$j$num"
+                    val boxKey = "box_${i / 3}_${j / 3}$num"
+
+                    if (seen.contains(rowKey) || seen.contains(colKey) || seen.contains(boxKey)) {
+                        return false
+                    }
+
+                    seen.add(rowKey)
+                    seen.add(colKey)
+                    seen.add(boxKey)
+                }
+            }
+        }
+        return true
+    }
+
     fun createPuzzleAndSolutionPair(solvedBoard: Array<IntArray>, cellsToRemove: Int): Pair<Array<IntArray>, Map<Pair<Int, Int>, Int>> {
         val puzzle = solvedBoard.map { it.clone() }.toTypedArray() // Clone the solved board
         var removed = 0
@@ -78,21 +112,20 @@ object SudokuHelper {
             val j = cellIndex % 9
 
             if (cellIndices.isEmpty()) { // cannot remove clue anymore
-//                Log.d(TAG, "cannot remove clue anymore")
+                Log.d(TAG, "no more clue can be removed")
                 break
             }
 
             // Ensure we only remove a filled cell
             if (puzzle[i][j] != 0) {
 //                printSudoku(puzzle)
-//                Log.d(TAG, "removed: $removed, chosen cell: i:$i, j:$j")
+                Log.d(TAG, "remains: ${cellIndices.size}, removed: $removed, chosen cell: i:$i, j:$j")
                 val temp = puzzle.map { it.clone() }.toTypedArray() // Clone the solved board
                 temp[i][j] = 0 // Remove the cell
                 val possibleSolutionCount = countSolutions(temp)
 //                Log.d(TAG, "possibleSolutionCount: $possibleSolutionCount")
                 // Check if the puzzle still has a unique solution
                 if (possibleSolutionCount == 1) {
-//                    Log.d(TAG, "removed: $removed -> find next\n ")
                     solution.put(Pair(j, i), puzzle[i][j]) // Track removed position
                     puzzle[i][j] = 0
                     removed++
