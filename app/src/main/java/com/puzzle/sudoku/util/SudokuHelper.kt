@@ -1,14 +1,15 @@
 package com.puzzle.sudoku.util
 
 import android.util.Log
+import com.puzzle.sudoku.model.Difficulty
 import java.util.LinkedList
 
 object SudokuHelper {
     const val TAG = "SudokuHelper"
 
-    fun generatePuzzleAndSolutionSet(numberOfEmptyCell: Int): Pair<Array<IntArray>, Map<Pair<Int, Int>, Int>> {
+    fun generatePuzzleAndSolutionSet(difficulty: Difficulty): Pair<Array<IntArray>, Map<Pair<Int, Int>, Int>> {
         val solvedBoard = generateSolvedSudoku()
-        val puzzleAndSolutionPair = createPuzzleAndSolutionPair(solvedBoard, numberOfEmptyCell)
+        val puzzleAndSolutionPair = createPuzzleAndSolutionPair(solvedBoard, difficulty.maxNumOfBlank)
         printSudoku(puzzleAndSolutionPair.first) // print puzzle
         Log.d(TAG, "(${puzzleAndSolutionPair.second.size}) ${puzzleAndSolutionPair.second}") // print solution
         return puzzleAndSolutionPair

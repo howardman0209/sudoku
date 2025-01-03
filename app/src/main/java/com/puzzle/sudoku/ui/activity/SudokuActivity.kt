@@ -2,6 +2,9 @@ package com.puzzle.sudoku.ui.activity
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -9,6 +12,7 @@ import com.puzzle.sudoku.ui.component.InputKeypad
 import com.puzzle.sudoku.R
 import com.puzzle.sudoku.util.SudokuHelper
 import com.puzzle.sudoku.databinding.ActivitySudokuBinding
+import com.puzzle.sudoku.model.Difficulty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,6 +27,7 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
     private var puzzle: Array<IntArray>? = null
     private var solution: Map<Pair<Int, Int>, Int>? = null
     private var firstBackPressedTime = 0L
+    private var difficulty = Difficulty.HARD
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +38,7 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
         binding.btnNewGame.setOnClickListener {
             showLoadingIndicator(true)
             lifecycleScope.launch(Dispatchers.Default) {
-                val (puzzle, solution) = SudokuHelper.generatePuzzleAndSolutionSet(numberOfEmptyCell = 56)
+                val (puzzle, solution) = SudokuHelper.generatePuzzleAndSolutionSet(difficulty = difficulty)
                 this@SudokuActivity.puzzle = puzzle
                 this@SudokuActivity.solution = solution
 
@@ -71,6 +76,23 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
 
         binding.btnClear.setOnClickListener {
             binding.sudokuBoard.clearCell()
+        }
+
+
+        binding.spinnerDifficulty.apply {
+            val items = Difficulty.entries.toTypedArray()
+            val adapter = ArrayAdapter(this@SudokuActivity, android.R.layout.simple_spinner_item, items)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            this.adapter = adapter
+            this.setSelection(items.indexOf(Difficulty.HARD))
+
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    difficulty = items[position]
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
         }
     }
 
