@@ -62,9 +62,9 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
             setImageResource(if (isEditing.get() == true) R.drawable.ic_round_done_outline_24 else R.drawable.ic_baseline_edit_24)
             setOnClickListener {
                 val isEditing = isEditing.get() == true
-                showLoadingIndicator(true)
                 lifecycleScope.launch(Dispatchers.IO) {
                     if (isEditing) {
+                        showLoadingIndicator(true)
                         val trial = SudokuHelper.fillBoard(puzzle.map { it.clone() }.toTypedArray())
                         if (trial.isNotEmpty()) {
                             solution = trial
@@ -78,9 +78,9 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
                     }
 
                     withContext(Dispatchers.Main) {
-                        showLoadingIndicator(false)
+                        if (isEditing) showLoadingIndicator(false)
                         this@SudokuActivity.isEditing.set(!isEditing)
-                        setImageResource(if (!isEditing) R.drawable.ic_baseline_edit_24 else R.drawable.ic_round_done_outline_24)
+                        setImageResource(if (!isEditing) R.drawable.ic_round_done_outline_24 else R.drawable.ic_baseline_edit_24)
 
                         if (isEditing && solution.isNullOrEmpty()) {
                             showDialog(this@SudokuActivity, getString(R.string.dialog_message_invalid_sudoku_puzzle))
