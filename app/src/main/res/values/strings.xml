@@ -3,10 +3,14 @@
     <string name="button_new_game">new game</string>
     <string name="button_close">Close</string>
     <string name="button_clear">Clear</string>
+    <string name="button_solve">Solve</string>
     <string name="label_solution">Solution</string>
     <string name="label_tips">tips</string>
-    <string name="toast_message_click_exit_again">Click exit again</string>
     <string name="label_note">Note</string>
     <string name="label_editing">Editing</string>
+    <string name="label_yes">Yes</string>
+    <string name="label_no">No</string>
+    <string name="toast_message_click_exit_again">Click exit again</string>
     <string name="dialog_message_invalid_sudoku_puzzle">Invalid Sudoku puzzle</string>
+    <string name="dialog_message_are_you_sure_to_give_up">Are you sure to give up?</string>
 </resources>

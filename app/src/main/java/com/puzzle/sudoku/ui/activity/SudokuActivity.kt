@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.databinding.ObservableField
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.puzzle.sudoku.ui.component.InputKeypad
 import com.puzzle.sudoku.R
 import com.puzzle.sudoku.util.SudokuHelper
@@ -89,15 +90,6 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
                     }
                 }
             }
-
-            setOnLongClickListener {
-                if (isEditing.get() != true) {
-                    solution?.forEach { key, value ->
-                        binding.sudokuBoard.markOrEraseAnswer(value, key)
-                    }
-                }
-                true
-            }
         }
 
         binding.btnClear.setOnClickListener {
@@ -110,6 +102,18 @@ class SudokuActivity() : BasicDataBindingActivity<ActivitySudokuBinding>(), Inpu
             }
         }
 
+        binding.btnSolve.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setCancelable(false)
+                .setTitle(R.string.dialog_message_are_you_sure_to_give_up)
+                .setNegativeButton(R.string.label_yes) { _, _ ->
+                    solution?.forEach { key, value ->
+                        binding.sudokuBoard.markOrEraseAnswer(value, key)
+                    }
+                }
+                .setPositiveButton(R.string.label_no) { _, _ -> }
+                .show()
+        }
 
         binding.spinnerDifficulty.apply {
             val items = Difficulty.entries.toTypedArray()
