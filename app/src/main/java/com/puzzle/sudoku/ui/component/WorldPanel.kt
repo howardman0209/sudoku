@@ -68,8 +68,8 @@ class WorldPanel @JvmOverloads constructor(
     var center = Pair(50F, 50F)
     val boundary by lazy { floatArrayOf(circleRadius, circleRadius, width - circleRadius, height - circleRadius) }
     var vector = Pair(5F, 135) // (magnitude, angle)
-    val good by lazy { MutableList(5) { Pair(Random.nextInt(0, width - circleRadius.toInt()).toFloat(), Random.nextInt(0, height - circleRadius.toInt()).toFloat()) } }
-    val bad by lazy { MutableList(5) { Pair(Random.nextInt(0, width - circleRadius.toInt()).toFloat(), Random.nextInt(0, height - circleRadius.toInt()).toFloat()) } }
+    val good by lazy { MutableList(5) { Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()) } }
+    val bad by lazy { MutableList(5) { Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()) } }
 
     var score = 50
 
@@ -132,13 +132,13 @@ class WorldPanel @JvmOverloads constructor(
                 good.filter { calculateDistance(it, center) < circleRadius }.forEach {
                     score++
                     good.remove(it)
-                    good.add(Pair(Random.nextInt(0, width - circleRadius.toInt()).toFloat(), Random.nextInt(0, height - circleRadius.toInt()).toFloat()))
+                    good.add(Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()))
                 }
 
                 bad.filter { calculateDistance(it, center) < circleRadius }.forEach {
                     score--
                     bad.remove(it)
-                    bad.add(Pair(Random.nextInt(0, width - circleRadius.toInt()).toFloat(), Random.nextInt(0, height - circleRadius.toInt()).toFloat()))
+                    bad.add(Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()))
                 }
                 Log.d(TAG, "score: $score")
 
