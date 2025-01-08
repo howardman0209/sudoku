@@ -34,10 +34,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val permissionsRequiredAndRequestIntent = listOf<Pair<() -> Boolean, Intent>>(
-        Pair({ canDrawOverlays() }, Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))),
-        Pair({ isAccessibilityServiceEnabled(TouchEventService::class.java) }, Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)),
-    )
+    private val permissionsRequiredAndRequestIntent by lazy {
+        listOf<Pair<() -> Boolean, Intent>>(
+            Pair({ canDrawOverlays() }, Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))),
+            Pair({ isAccessibilityServiceEnabled(TouchEventService::class.java) }, Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)),
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
