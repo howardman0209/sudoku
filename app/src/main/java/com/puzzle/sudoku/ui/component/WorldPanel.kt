@@ -75,14 +75,14 @@ class WorldPanel @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        canvas.drawColor(Color.WHITE)
-        canvas.drawRect(boundary[0], boundary[1], boundary[2], boundary[3], boundaryPaint)
-        canvas.drawLines(
-            floatArrayOf(
-                width / 2F, 0F, width / 2F, height.toFloat(),
-                0F, height / 2F, width.toFloat(), height / 2F
-            ), linePaint
-        )
+//        canvas.drawColor(Color.WHITE)
+//        canvas.drawRect(boundary[0], boundary[1], boundary[2], boundary[3], boundaryPaint)
+//        canvas.drawLines(
+//            floatArrayOf(
+//                width / 2F, 0F, width / 2F, height.toFloat(),
+//                0F, height / 2F, width.toFloat(), height / 2F
+//            ), linePaint
+//        )
         val scoreInfo = "Score: $score"
         canvas.drawText(scoreInfo, width - textPaint.measureText(scoreInfo) - 8F, height.toFloat() - 8F, textPaint)
 
@@ -141,6 +141,10 @@ class WorldPanel @JvmOverloads constructor(
                     bad.add(Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()))
                 }
                 Log.d(TAG, "score: $score")
+
+                if (score == 0 || score == 100) {
+                    break
+                }
 
                 invalidate()
                 delay(1000 / 60)
