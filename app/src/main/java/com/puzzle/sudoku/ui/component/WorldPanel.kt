@@ -67,7 +67,7 @@ class WorldPanel @JvmOverloads constructor(
 
     val circleRadius = 50F
     var center = Pair(50F, 50F)
-    val boundary by lazy { floatArrayOf(circleRadius, circleRadius, width - circleRadius, height - circleRadius) }
+    val boundary get() = floatArrayOf(circleRadius, circleRadius, width - circleRadius, height - circleRadius)
     var vector = Pair(5F, 135) // (magnitude, angle)
     val good by lazy { MutableList(5) { Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()) } }
     val bad by lazy { MutableList(5) { Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()) } }
@@ -131,14 +131,14 @@ class WorldPanel @JvmOverloads constructor(
                 }
 
                 good.filter { calculateDistance(it, center) < circleRadius }.forEach {
-                    TouchEventService.instance?.simulateTap(it.first, it.second)
+                    TouchEventService.instance?.performTap(it.first, it.second)
                     score++
                     good.remove(it)
                     good.add(Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()))
                 }
 
                 bad.filter { calculateDistance(it, center) < circleRadius }.forEach {
-                    TouchEventService.instance?.simulateTap(it.first, it.second)
+                    TouchEventService.instance?.performTap(it.first, it.second)
                     score--
                     bad.remove(it)
                     bad.add(Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()))
