@@ -1,5 +1,6 @@
 package com.puzzle.sudoku.ui.activity
 
+import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,19 +13,31 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.puzzle.sudoku.R
 import com.puzzle.sudoku.service.OverlayService
+import com.puzzle.sudoku.service.TouchEventService
 
 class MainActivity : AppCompatActivity() {
 
     val settingLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (canDrawOverlays()) {
+        var allConditionPassed = true
+        permissionsRequiredAndRequestIntent.forEach {
+            if (!it.first.invoke()) {
+                allConditionPassed = false
+            }
+        }
+        if (allConditionPassed) {
             startOverlayService()
             finish()
         } else {
-            // Handle permission not granted case
+            requestMissingPermissions()
         }
     }
+
+    private val permissionsRequiredAndRequestIntent = listOf<Pair<() -> Boolean, Intent>>(
+        Pair({ canDrawOverlays() }, Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))),
+        Pair({ isAccessibilityServiceEnabled(TouchEventService::class.java) }, Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)),
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,12 +49,12 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        if (canDrawOverlays()) {
+        if (permissionsRequiredAndRequestIntent.all { it.first.invoke() == true }) {
             Log.d("MainActivity", "starting OverlayService")
             startOverlayService()
             finish()
         } else {
-            requestOverlayPermission()
+            requestMissingPermissions()
         }
     }
 
@@ -49,9 +62,16 @@ class MainActivity : AppCompatActivity() {
         return Settings.canDrawOverlays(this)
     }
 
-    private fun requestOverlayPermission() {
-        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+    private fun requestMissingPermissions() {
+        val intent = permissionsRequiredAndRequestIntent.first { it.first.invoke() != true }.second
         settingLauncher.launch(intent)
+    }
+
+    private fun isAccessibilityServiceEnabled(service: Class<out AccessibilityService>): Boolean {
+        val enabledServices = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+        val colonSeparatedServices = enabledServices.split(":")
+        // Check if the service is in the list
+        return colonSeparatedServices.any { it.contains(service.name, ignoreCase = true) }
     }
 
     private fun startOverlayService() {

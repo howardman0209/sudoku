@@ -12,6 +12,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import com.puzzle.sudoku.service.TouchEventService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -130,12 +131,14 @@ class WorldPanel @JvmOverloads constructor(
                 }
 
                 good.filter { calculateDistance(it, center) < circleRadius }.forEach {
+                    TouchEventService.instance?.simulateTap(it.first, it.second)
                     score++
                     good.remove(it)
                     good.add(Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()))
                 }
 
                 bad.filter { calculateDistance(it, center) < circleRadius }.forEach {
+                    TouchEventService.instance?.simulateTap(it.first, it.second)
                     score--
                     bad.remove(it)
                     bad.add(Pair(Random.nextInt(circleRadius.toInt(), width - circleRadius.toInt()).toFloat(), Random.nextInt(circleRadius.toInt(), height - circleRadius.toInt()).toFloat()))

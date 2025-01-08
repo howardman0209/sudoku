@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">sudoku</string>
+    <string name="app_name">Sudoku</string>
     <string name="button_new_game">new game</string>
     <string name="button_close">Close</string>
     <string name="button_clear">Clear</string>
