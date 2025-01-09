@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startOverlayService() {
-        val intent = Intent(this, OverlayService::class.java)
+        val intent = Intent(applicationContext, OverlayService::class.java)
         startService(intent)
     }
 }
