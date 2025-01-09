@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isAccessibilityServiceEnabled(service: Class<out AccessibilityService>): Boolean {
-        val enabledServices = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+        val enabledServices = Settings.Secure.getString(applicationContext.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
         val colonSeparatedServices = enabledServices.split(":")
         // Check if the service is in the list
         return colonSeparatedServices.any { it.contains(service.name, ignoreCase = true) }
