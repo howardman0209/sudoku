@@ -14,11 +14,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.puzzle.sudoku"
+        applicationId = "com.puzzle.sudoku.ii"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 1_001
+        versionName = "1.001"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
